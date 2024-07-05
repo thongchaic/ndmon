@@ -12,7 +12,6 @@ if __name__ == '__main__':
     for plen, t, buf in sniff(device, count=10, promisc=1, filters="arp or icmp6"):
         if buf is not None and isinstance(buf, (bytes)):
             eth = binascii.hexlify(buf).decode()[:28]
-            print(eth[24:28])
             if '86dd' in eth[24:28]:
                 nd = ND(buf)
                 nd.pretty()

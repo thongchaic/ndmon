@@ -81,6 +81,8 @@ class ND:
         self.nd_ra_retrans = None 
         self.nd_ra_options = None 
 
+        #Router Solicitation
+        self.nd_rs_options = None 
 
 
 
@@ -134,10 +136,14 @@ class ND:
             self.nd_ra_life = (self.icmp6_resv & 0x0000ffff) 
             self.icmp6_resv = (self.icmp6_resv & 0x0003f0000) >> 16
             self.router_advertisement(raw[16:])
-      
-
+        elif self.icmp6_type == 133:
+            self.router_solicitation(raw[16:])
         else:
             print(self.icmp6_type, f"{RED}=>STILL UNKNOWN{RESET}")
+
+    def router_solicitation(self, raw):
+        if len(raw) > 0:
+            self.nd_rs_options = raw
 
     def router_advertisement(self, raw):
 
@@ -149,10 +155,13 @@ class ND:
     def neighbor_solicitation(self, raw):
         self.nd_target = raw[0:32]
         if len(raw[32:]) > 0:
-            self.nd_opt_type = int(raw[32:34]) if ishex(raw[32:34]) else None 
-            self.nd_opt_len = int(raw[34:36]) if ishex(raw[34:36]) else None 
-            self.nd_opt_address = raw[36:]
-
+            try:
+                self.nd_opt_type = int(raw[32:34]) if ishex(raw[32:34]) else None 
+                self.nd_opt_len = int(raw[34:36]) if ishex(raw[34:36]) else None 
+                self.nd_opt_address = raw[36:]
+            except:
+                print(f"{CYAN}Neighbor Solicitation opt error ({len(raw[32:])}):{RESET}",raw[32:])
+                
     def neighbor_advertisement(self, raw):
         self.nd_target = raw[0:32]
         if len(raw[32:]) > 0:
@@ -199,13 +208,20 @@ class ND:
             print('[nd] reach :',self.nd_ra_reachable)
             print('[nd] retr  :',self.nd_ra_retrans)
             print('[nd] options :',self.nd_ra_options) if self.nd_ra_options else None 
+        
+        elif self.icmp6_type == 133:
+            if self.nd_rs_options:
+                print('[nd] option:',self.nd_rs_options[:4]) if self.nd_rs_options[:4] else None 
+                print('[nd] link  :',self.nd_rs_options[4:]) if self.nd_rs_options[4:] else None
+            else:
+                print('[nd] options:',self.nd_rs_options)
 
             
 if __name__ == '__main__':
     dev=get_first_iface()
     print("Capture: ",dev)
-    nd = ND("748f3cc24b0d60f18a36814686dd6000000000183afffe800000000000000000000000000001fe800000000000001c9e716ca96df65388008e5bc0000000fe800000000000000000000000000001")
-    nd.pretty()
+    # nd = ND("748f3cc24b0d60f18a36814686dd6000000000183afffe800000000000000000000000000001fe800000000000001c9e716ca96df65388008e5bc0000000fe800000000000000000000000000001")
+    # nd.pretty()
     for plen, t, buf in sniff(dev, count=100, promisc=1, filters="icmp6"):
         if buf is not None and isinstance(buf, (bytes)):
             #print(binascii.hexlify(buf).decode())
