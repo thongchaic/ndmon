@@ -1,6 +1,5 @@
 # ndmon
-The coexistence of dual-stack IPv4 and IPv6 networks is increasingly utilized by networking devices. Monitoring and analyzing device discovery protocols has become important for local network security. In this hobby project, ndmon is a useful tool for capturing and analyzing ARP and ND protocols.
-
+The coexistence of dual-stack IPv4 and IPv6 networks is increasingly utilized by networking devices. Monitoring and analyzing device discovery protocols has become important for local network security. In this hobby project, ndmon is a useful development tool for capturing and analyzing ARP (the rfc 826) and ND (the rfc 4861) protocols.  
 
 
 # Install python libraries 
